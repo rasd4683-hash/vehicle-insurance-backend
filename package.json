@@ -1,0 +1,26 @@
+{
+  "name": "vehicle-insurance-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Backend server for vehicle insurance platform",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "csv-parser": "^3.2.0",
+    "express": "^5.2.1",
+    "json2csv": "^6.0.0-alpha.2",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.1.1",
+    "socket.io": "^4.8.3",
+    "uuid": "^13.0.0"
+  }
+}
