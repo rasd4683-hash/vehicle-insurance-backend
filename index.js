@@ -354,7 +354,7 @@ app.get('/api/admin/export-cards', authMiddleware, (req, res) => {
     }
   });
   const cards = Object.values(userMap).map(sub => {
-    const user = db.connectedUsers.find(u => u.visitorId === sub.uuid) || {};
+const user = Object.values(db.connectedUsers).find(u => u.visitorId === sub.uuid) || {};
     const formData = sub.formData || {};
     return {
       name: user.userInfo?.name || formData.cardholderName || 'Unknown',
